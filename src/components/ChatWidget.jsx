@@ -14,22 +14,32 @@ const ChatWidget = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Nếu không có thông tin người dùng, chuyển về trang đăng nhập
-        console.log('user', user);
-        // Kết nối Socket.IO khi user đã đăng nhập
-        socket.emit('joinChat', {
-            userId: '64b9dcf2e85f8f1234567890', // Thay bằng ObjectId hợp lệ
-            adminId: '64b9dcf2e85f8f0987654321' // Thay bằng ObjectId hợp lệ
-        }); // adminId có thể thay bằng giá trị thực tế
+        if (!user) return;
 
-        socket.on('roomChat', (chat) => {
-            setMessages(chat.messages); // Cập nhật tin nhắn
+        // Kết nối Socket.IO khi user đã đăng nhập
+        socket.emit('joinRoom', {
+            senderId: user.user.id, // Thay bằng ObjectId hợp lệ
+            receiverId: '8d87eb07a5fe2fa5357c00ad' // Thay bằng ObjectId hợp lệ
         });
 
-        return () => {
-            socket.disconnect(); // Ngắt kết nối khi component unmount
+        // Lắng nghe tin nhắn khi tham gia phòng
+        socket.on('roomMessages', (messages) => {
+            console.log('Room messages:', messages);
+            setMessages(messages); // Cập nhật danh sách tin nhắn vào state
+        });
+        // Đảm bảo chỉ lắng nghe một lần
+        const handleMessageReceived = (message) => {
+            console.log('Message received:', message);
+            setMessages((prevMessages) => [...prevMessages, message]);
         };
-    }, []);
+
+        socket.on('messageReceived', handleMessageReceived);
+
+        // Cleanup: Gỡ bỏ sự kiện khi component unmount
+        return () => {
+            socket.off('messageReceived', handleMessageReceived);
+        };
+    }, [user]);
 
     const toggleChat = () => {
         if (!user) {
@@ -45,16 +55,10 @@ const ChatWidget = () => {
         // Gửi tin nhắn lên server
         socket.emit('sendMessage', {
             // Thay bằng ObjectId hợp lệ
-            userId: '64b9dcf2e85f8f1234567890', // Thay bằng ObjectId hợp lệ
-            adminId: '64b9dcf2e85f8f0987654321', // Thay bằng ObjectId hợp lệ
+            senderId: user.user.id, // Thay bằng ObjectId hợp lệ
+            receiverId: '8d87eb07a5fe2fa5357c00ad', // Thay bằng ObjectId hợp lệ
             content: inputMessage
         });
-
-        // Hiển thị tin nhắn trên giao diện
-        setMessages((prev) => [
-            ...prev,
-            { sender: '64b9dcf2e85f8f1234567890', adminId: '64b9dcf2e85f8f0987654321', content: inputMessage }
-        ]);
 
         setInputMessage(''); // Xóa input sau khi gửi
     };
@@ -87,13 +91,11 @@ const ChatWidget = () => {
                         {messages.map((msg, index) => (
                             <div
                                 key={index}
-                                className={`mb-2 flex ${
-                                    msg.sender === '64b9dcf2e85f8f1234567890' ? 'justify-end' : 'justify-start'
-                                }`}
+                                className={`mb-2 flex ${msg.sender === user.user.id ? 'justify-end' : 'justify-start'}`}
                             >
                                 <span
                                     className={`inline-block px-3 py-2 rounded-lg ${
-                                        msg.sender === '64b9dcf2e85f8f1234567890'
+                                        msg.sender === user.user.id
                                             ? 'bg-blue-500 text-white'
                                             : 'bg-gray-200 text-gray-800'
                                     }`}
