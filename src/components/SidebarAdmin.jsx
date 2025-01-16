@@ -2,10 +2,12 @@ import background from '../assets/logo/logo.jpg';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { FaAngleDown } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 
 export default function SidebarAdmin() {
     const [isTourMenuOpen, setIsTourMenuOpen] = useState(false); // State to toggle the dropdown
     const [isBlogMenuOpen, setIsBlogMenuOpen] = useState(false); // State to toggle the dropdown
+    const user = useSelector((state) => state.client.user);
     return (
         <>
             <aside className="w-64 text-black p-5">
@@ -17,7 +19,11 @@ export default function SidebarAdmin() {
                 <div className="flex">
                     <a href="">
                         <img
-                            src="https://anhgaixinh.vn/wp-content/uploads/2022/12/hinh-nen-gai-xinh-hd-cho-dien-thoai.jpg"
+                            src={
+                                user
+                                    ? user.user.avatar
+                                    : 'https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-30.jpg'
+                            }
                             className="w-16 h-16 rounded-full"
                         ></img>
                     </a>
@@ -105,6 +111,11 @@ export default function SidebarAdmin() {
                         <li className="mb-4 rounded">
                             <Link to="/tour-contact" className="block w-full p-2 hover:bg-[#C499F9] rounded">
                                 Liên Hệ
+                            </Link>
+                        </li>
+                        <li className="mb-4 rounded">
+                            <Link to="/support-customer" className="block w-full p-2 hover:bg-[#C499F9] rounded">
+                                Hỗ trợ khách hàng
                             </Link>
                         </li>
                         <li className="mb-4 rounded">

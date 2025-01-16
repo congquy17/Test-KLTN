@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import axios from 'axios';
 
 const socket = io('http://localhost:8000'); // URL backend của bạn
 
@@ -9,25 +10,48 @@ const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false); // Trạng thái mở/đóng hộp chat
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
+    const [receiverId, setReceiverId] = useState(null);
 
+    const messagesEndRef = useRef(null); // Ref cho container tin nhắn
     const user = useSelector((state) => state.client.user); // Lấy thông tin user từ Redux
     const navigate = useNavigate();
+
+    // Cuộn xuống cuối khi messages thay đổi
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        const fetchAdminChatId = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/auth/adminChat');
+                setReceiverId(response.data.adminId);
+                console.log('AdminChat ID:', response.data.adminId);
+            } catch (error) {
+                console.error('Error fetching adminChat ID:', error);
+            }
+        };
+
+        fetchAdminChatId();
+    }, []);
 
     useEffect(() => {
         if (!user) return;
 
         // Kết nối Socket.IO khi user đã đăng nhập
         socket.emit('joinRoom', {
-            senderId: user.user.id, // Thay bằng ObjectId hợp lệ
-            receiverId: '8d87eb07a5fe2fa5357c00ad' // Thay bằng ObjectId hợp lệ
+            senderId: user.user.id,
+            receiverId: receiverId
         });
 
         // Lắng nghe tin nhắn khi tham gia phòng
         socket.on('roomMessages', (messages) => {
             console.log('Room messages:', messages);
-            setMessages(messages); // Cập nhật danh sách tin nhắn vào state
+            setMessages(messages);
         });
-        // Đảm bảo chỉ lắng nghe một lần
+
         const handleMessageReceived = (message) => {
             console.log('Message received:', message);
             setMessages((prevMessages) => [...prevMessages, message]);
@@ -35,7 +59,7 @@ const ChatWidget = () => {
 
         socket.on('messageReceived', handleMessageReceived);
 
-        // Cleanup: Gỡ bỏ sự kiện khi component unmount
+        // Cleanup
         return () => {
             socket.off('messageReceived', handleMessageReceived);
         };
@@ -54,18 +78,16 @@ const ChatWidget = () => {
 
         // Gửi tin nhắn lên server
         socket.emit('sendMessage', {
-            // Thay bằng ObjectId hợp lệ
-            senderId: user.user.id, // Thay bằng ObjectId hợp lệ
-            receiverId: '8d87eb07a5fe2fa5357c00ad', // Thay bằng ObjectId hợp lệ
+            senderId: user.user.id,
+            receiverId: receiverId,
             content: inputMessage
         });
 
-        setInputMessage(''); // Xóa input sau khi gửi
+        setInputMessage('');
     };
 
     return (
         <div className="fixed bottom-4 right-4 z-50">
-            {/* Biểu tượng chat */}
             {!isOpen && (
                 <button
                     onClick={toggleChat}
@@ -75,10 +97,8 @@ const ChatWidget = () => {
                 </button>
             )}
 
-            {/* Hộp chat */}
             {isOpen && (
                 <div className="w-80 h-96 bg-white shadow-lg rounded-lg flex flex-col">
-                    {/* Header */}
                     <div className="flex items-center justify-between bg-red-500 text-white p-3 rounded-t-lg">
                         <span className="font-bold">Hỗ trợ trực tuyến</span>
                         <button onClick={toggleChat} className="text-white">
@@ -86,7 +106,6 @@ const ChatWidget = () => {
                         </button>
                     </div>
 
-                    {/* Danh sách tin nhắn */}
                     <div className="flex-1 overflow-y-auto p-3">
                         {messages.map((msg, index) => (
                             <div
@@ -104,9 +123,10 @@ const ChatWidget = () => {
                                 </span>
                             </div>
                         ))}
+                        {/* Phần tử ẩn để cuộn đến */}
+                        <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Input */}
                     <div className="flex p-3 border-t">
                         <input
                             type="text"

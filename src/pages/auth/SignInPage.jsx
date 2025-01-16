@@ -37,7 +37,7 @@ export default function SignIn() {
             dispatch(setUser(user)); // Store user information in Redux
             // Redirect to the home page
             console.log(response);
-            if (response.data.user.role == 'admin') {
+            if ((response.data.user.role == 'admin') | (response.data.user.role == 'adminChat')) {
                 navigate('/admin');
             } else {
                 navigate('/');

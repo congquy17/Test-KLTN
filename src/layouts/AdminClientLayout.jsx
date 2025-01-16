@@ -7,7 +7,6 @@ const ClientLayout = ({ children }) => {
     return (
         <>
             <Header />
-
             <main>{children}</main>
             <Footer />
             <ToastContainer limit={1} autoClose={1500} />

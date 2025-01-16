@@ -29,6 +29,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Provider } from 'react-redux';
 import store from './store/store';
 import ChatWidget from './components/ChatWidget';
+import AdminTourChatCustomer from './pages/admin/AdminTourChatCustomer';
 function App() {
     return (
         <Provider store={store}>
@@ -199,6 +200,16 @@ function App() {
                                     <PrivateRoute isAdmin={true}>
                                         <AdminLayout>
                                             <AdminTourContactPage />
+                                        </AdminLayout>
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/support-customer"
+                                element={
+                                    <PrivateRoute isAdmin={true}>
+                                        <AdminLayout>
+                                            <AdminTourChatCustomer />
                                         </AdminLayout>
                                     </PrivateRoute>
                                 }

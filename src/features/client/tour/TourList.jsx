@@ -35,7 +35,7 @@ const TourList = ({ categoryName, home = false }) => {
                 <TourCard
                     key={tour.tourId}
                     id={tour.tourId}
-                    image={tour.images}
+                    image={tour.main_image}
                     title={tour.name}
                     price={tour.price}
                     // Chuyển đổi startDate thành định dạng DD/MM/YYYY

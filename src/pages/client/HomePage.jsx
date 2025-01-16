@@ -140,7 +140,7 @@ function HomePage() {
             {/* TOUR TRONG NƯỚC */}
             <section className="py-8 bg-white text-center container mx-auto mt-[80px]">
                 <h2 className="text-3xl font-bold text-purple-600">TOUR TRONG NƯỚC</h2>
-                {/* <TourList className="mt-8" categoryName={'Tour Trong Nước'} /> */}
+                {/* <TourList className="mt-8" categoryName={'Du lịch trong nước'} /> */}
             </section>
             {/* TOUR TRONG NƯỚC */}
             <section className="py-8 bg-white text-center container mx-auto mt-[80px]">
